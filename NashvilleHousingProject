@@ -1,0 +1,110 @@
+--Data Cleaning in SQL Queries
+
+--This SQL script demonstrates the process of cleaning and standardizing data in the NashvilleHousing table.
+
+--Cleaning Data in SQL Queries
+
+
+-- Select all columns from the NashvilleHousing table
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Standardize Date Format
+
+-- Select SaleDateConverted and convert SaleDate to Date format
+Select saleDateConverted, CONVERT(Date, SaleDate)
+From PortfolioProject.dbo.NashvilleHousing
+
+-- Update SaleDate to Date format
+Update NashvilleHousing
+SET SaleDate = CONVERT(Date, SaleDate)
+
+-- If the update doesn't work, add SaleDateConverted column and try again
+ALTER TABLE NashvilleHousing
+Add SaleDateConverted Date;
+
+Update NashvilleHousing
+SET SaleDateConverted = CONVERT(Date, SaleDate)
+
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Populate Property Address data
+
+-- Select data from NashvilleHousing table
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+--Where PropertyAddress is null
+order by ParcelID
+
+-- Populate PropertyAddress by matching with another row based on ParcelID
+Select a.ParcelID, a.PropertyAddress, b.ParcelID, b.PropertyAddress, ISNULL(a.PropertyAddress, b.PropertyAddress)
+From PortfolioProject.dbo.NashvilleHousing a
+JOIN PortfolioProject.dbo.NashvilleHousing b
+	on a.ParcelID = b.ParcelID
+	AND a.[UniqueID ] <> b.[UniqueID ]
+Where a.PropertyAddress is null
+
+-- Update PropertyAddress with matched values
+Update a
+SET PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
+From PortfolioProject.dbo.NashvilleHousing a
+JOIN PortfolioProject.dbo.NashvilleHousing b
+	on a.ParcelID = b.ParcelID
+	AND a.[UniqueID ] <> b.[UniqueID ]
+Where a.PropertyAddress is null
+
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Breaking out Address into Individual Columns (Address, City, State)
+
+-- Select PropertyAddress from NashvilleHousing table
+Select PropertyAddress
+From PortfolioProject.dbo.NashvilleHousing
+--Where PropertyAddress is null
+--order by ParcelID
+
+-- Split PropertyAddress into Address and City
+SELECT
+SUBSTRING(PropertyAddress, 1, CHARINDEX(',', PropertyAddress) -1 ) as Address
+, SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddress) + 1 , LEN(PropertyAddress)) as Address
+
+From PortfolioProject.dbo.NashvilleHousing
+
+-- Add columns for split Address and City
+ALTER TABLE NashvilleHousing
+Add PropertySplitAddress Nvarchar(255);
+
+Update NashvilleHousing
+SET PropertySplitAddress = SUBSTRING(PropertyAddress, 1, CHARINDEX(',', PropertyAddress) -1 )
+
+ALTER TABLE NashvilleHousing
+Add PropertySplitCity Nvarchar(255);
+
+Update NashvilleHousing
+SET PropertySplitCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddress) + 1 , LEN(PropertyAddress))
+
+-- Select all columns from NashvilleHousing table
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+-- Select OwnerAddress from NashvilleHousing table
+Select OwnerAddress
+From PortfolioProject.dbo.NashvilleHousing
+
+-- Split OwnerAddress into Address, City, and State
+Select
+PARSENAME(REPLACE(OwnerAddress, ',', '.') , 3) as OwnerSplitAddress
+, PARSENAME(REPLACE(OwnerAddress, ',', '.') , 2) as OwnerSplitCity
+, PARSENAME(REPLACE(OwnerAddress, ',', '.') , 1) as OwnerSplitState
+From PortfolioProject.dbo.NashvilleHousing
+
+-- Add columns for split OwnerAddress, City, and State
+ALTER TABLE NashvilleHousing
+Add OwnerSplitAddress Nvarchar(255);
+
+Update NashvilleHousing
+SET OwnerSplitAddress = PARSENAME(REPLACE(OwnerAddress, ',', '.') , 3)
+
+ALTER TABLE NashvilleHousing
