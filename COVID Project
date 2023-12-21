@@ -11,6 +11,7 @@ Select Location, date, total_cases, new_cases, total_deaths, population
 From PortfolioProject..CovidDeaths
 Where continent is not null 
 order by 1,2
+```sql
 
 -- 2. Total Cases vs Total Deaths
 -- Illustrates the likelihood of mortality if one contracts COVID-19 in a country.
@@ -20,6 +21,7 @@ From PortfolioProject..CovidDeaths
 Where location like '%states%'
 and continent is not null 
 order by 1,2
+```sql
 
 -- 3. Total Cases vs Population
 -- Demonstrates the percentage of the population infected with COVID-19.
@@ -27,6 +29,7 @@ order by 1,2
 Select Location, date, Population, total_cases,  (total_cases/population)*100 as PercentPopulationInfected
 From PortfolioProject..CovidDeaths
 order by 1,2
+```sql
 
 -- 4. Countries with Highest Infection Rate compared to Population
 -- Identifies countries with the highest infection rates relative to their population.
@@ -36,7 +39,7 @@ From PortfolioProject..CovidDeaths
 --Where location like '%states%'
 Group by Location, Population
 order by PercentPopulationInfected desc
-
+```sql
 
 -- 5. Countries with Highest Death Count per Population
 -- Lists countries with the highest death counts per population.
@@ -47,7 +50,7 @@ From PortfolioProject..CovidDeaths
 Where continent is not null 
 Group by Location
 order by TotalDeathCount desc
-
+```sql
 
 
 -- 6. Breaking Things Down by Continent
@@ -59,7 +62,7 @@ From PortfolioProject..CovidDeaths
 Where continent is not null 
 Group by continent
 order by TotalDeathCount desc
-
+```sql
 
 
 -- 7. Global Numbers
@@ -71,7 +74,7 @@ From PortfolioProject..CovidDeaths
 where continent is not null 
 --Group By date
 order by 1,2
-
+```sql
 
 
 -- 8. Total Population vs Vaccinations
@@ -86,7 +89,7 @@ Join PortfolioProject..CovidVaccinations vac
 	and dea.date = vac.date
 where dea.continent is not null 
 order by 2,3
-
+```sql
 
 -- 9. Using CTE to Perform Calculation on Partition By in Previous Query
 -- Demonstrates the same calculation using a Common Table Expression (CTE).
@@ -106,7 +109,7 @@ where dea.continent is not null
 )
 Select *, (RollingPeopleVaccinated/Population)*100
 From PopvsVac
-
+```sql
 
 
 -- 10. Using Temp Table to Perform Calculation on Partition By in Previous Query
@@ -123,6 +126,8 @@ New_vaccinations numeric,
 RollingPeopleVaccinated numeric
 )
 ```sql
+
+```sql
 Insert into #PercentPopulationVaccinated
 Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
@@ -134,9 +139,11 @@ Join PortfolioProject..CovidVaccinations vac
 --where dea.continent is not null 
 --order by 2,3
 ```sql
+
+```sql
 Select *, (RollingPeopleVaccinated/Population)*100
 From #PercentPopulationVaccinated
-
+```sql
 
 
 
@@ -152,3 +159,4 @@ Join PortfolioProject..CovidVaccinations vac
 	On dea.location = vac.location
 	and dea.date = vac.date
 where dea.continent is not null 
+```sql
